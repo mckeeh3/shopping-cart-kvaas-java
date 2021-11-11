@@ -4,7 +4,7 @@
 
   <groupId>io.shopping.cart</groupId>
   <artifactId>shopping-cart-kvaas-java</artifactId>
-  <version>step-3</version>
+  <version>step-6</version>
   <packaging>jar</packaging>
 
   <name>shopping-cart-kvaas-java</name>
