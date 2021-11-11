@@ -4,14 +4,14 @@
 
   <groupId>io.shopping.cart</groupId>
   <artifactId>shopping-cart-kvaas-java</artifactId>
-  <version>step-1</version>
+  <version>step-3</version>
   <packaging>jar</packaging>
 
   <name>shopping-cart-kvaas-java</name>
     <properties>
 
     <!-- TODO Update to your own Docker repository or Docker Hub scope -->
-    <dockerImage>my-docker-repo/${project.artifactId}</dockerImage>
+    <dockerImage>mckeeh3/${project.artifactId}</dockerImage>
     <dockerTag>${project.version}</dockerTag>
     <mainClass>io.shopping.cart.Main</mainClass>
 
