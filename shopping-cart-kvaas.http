@@ -1,0 +1,53 @@
+
+# @urlPrefix = http://localhost:9000
+@urlPrefix = https://billowing-bush-7213.us-east1.akkaserverless.app
+@customerId = customer-1
+@cartId = cart-1
+@productId = product-1
+@productName = product name 1
+@quantity = 1
+
+### io.shopping.cart.ShoppingCartService.AddItem
+
+curl -XPOST -H "Content-Type: application/json" -d '{
+  "customer_id":"{{customerId}}",
+  "product_id":"{{productId}}",
+  "product_name":"{{productName}}",
+  "quantity":{{quantity}}
+  }' {{urlPrefix}}/cart/{{cartId}}/items/add
+
+### io.shopping.cart.ShoppingCartService.ChangeItem
+
+curl -XPUT -H "Content-Type: application/json" -d '{
+  "quantity":{{quantity}}
+  }' {{urlPrefix}}/cart/{{cartId}}/items/{{productId}}/change
+
+### io.shopping.cart.ShoppingCartService.RemoveItem
+
+curl -XDELETE -H "Content-Type: application/json"
+  {{urlPrefix}}/cart/{{cartId}}/items/{{productId}}/remove
+
+### io.shopping.cart.ShoppingCartService.CheckoutCart
+
+curl -XPUT -H "Content-Type: application/json"
+  {{urlPrefix}}/cart/{{cartId}}/checkout
+
+### io.shopping.cart.ShoppingCartService.ShippedCart
+
+curl -XPUT -H "Content-Type: application/json"
+  {{urlPrefix}}/cart/{{cartId}}/shipped
+
+### io.shopping.cart.ShoppingCartService.DeliveredCart
+
+curl -XPUT -H "Content-Type: application/json"
+  {{urlPrefix}}/cart/{{cartId}}/delivered
+
+### io.shopping.cart.ShoppingCartService.DeleteCart
+
+curl -XDELETE -H "Content-Type: application/json"
+  {{urlPrefix}}/cart/{{cartId}}/delete
+
+### io.shopping.cart.ShoppingCartService.GetCart
+
+curl -XGET -H "Content-Type: application/json"
+  {{urlPrefix}}/cart/{{cartId}}
