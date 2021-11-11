@@ -1,6 +1,7 @@
 package io.shopping.cart.entity;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -98,26 +99,83 @@ public class ShoppingCart extends AbstractShoppingCart {
   }
 
   private Optional<Effect<Empty>> reject(CartState state, CartApi.ChangeLineItem command) {
+    if (state.getCartId().isEmpty()) {
+      return Optional.of(effects().error("Shopping cart is empty"));
+    }
+    if (state.getCheckedOut()) {
+      return Optional.of(effects().error("Shopping cart is already checked out"));
+    }
+    if (state.getDeleted()) {
+      return Optional.of(effects().error("Shopping cart is deleted"));
+    }
+    if (command.getProductId().isEmpty()) {
+      return Optional.of(effects().error("Product id is required"));
+    }
+    if (command.getQuantity() <= 0) {
+      return Optional.of(effects().error("Quantity must be greater than 0"));
+    }
     return Optional.empty();
   }
 
   private Optional<Effect<Empty>> reject(CartState state, CartApi.RemoveLineItem command) {
+    if (state.getCartId().isEmpty()) {
+      return Optional.of(effects().error("Shopping cart is empty"));
+    }
+    if (state.getCheckedOut()) {
+      return Optional.of(effects().error("Shopping cart is already checked out"));
+    }
+    if (state.getDeleted()) {
+      return Optional.of(effects().error("Shopping cart is deleted"));
+    }
+    if (command.getProductId().isEmpty()) {
+      return Optional.of(effects().error("Product id is required"));
+    }
     return Optional.empty();
   }
 
   private Optional<Effect<Empty>> reject(CartState state, CartApi.CheckoutShoppingCart command) {
+    if (state.getCartId().isEmpty()) {
+      return Optional.of(effects().error("Shopping cart is empty"));
+    }
+    if (state.getDeleted()) {
+      return Optional.of(effects().error("Shopping cart is deleted"));
+    }
     return Optional.empty();
   }
 
   private Optional<Effect<Empty>> reject(CartState state, CartApi.ShippedShoppingCart command) {
+    if (state.getDeleted()) {
+      return Optional.of(effects().error("Shopping cart is deleted"));
+    }
+    if (state.getCheckedOutUtc().getSeconds() == 0) {
+      return Optional.of(effects().error("Shopping cart is not checked out"));
+    }
     return Optional.empty();
   }
 
   private Optional<Effect<Empty>> reject(CartState state, CartApi.DeliveredShoppingCart command) {
+    if (state.getDeleted()) {
+      return Optional.of(effects().error("Shopping cart is deleted"));
+    }
+    if (state.getCheckedOutUtc().getSeconds() == 0) {
+      return Optional.of(effects().error("Shopping cart is not checked out"));
+    }
+    if (state.getShippedUtc().getSeconds() == 0) {
+      return Optional.of(effects().error("Shopping cart is not shipped"));
+    }
     return Optional.empty();
   }
 
   private Optional<Effect<Empty>> reject(CartState state, CartApi.DeleteShoppingCart command) {
+    if (state.getDeliveredUtc().getSeconds() != 0) {
+      return Optional.of(effects().error("Cannot delete delivered order"));
+    }
+    if (state.getShippedUtc().getSeconds() != 0) {
+      return Optional.of(effects().error("Cannot delete shipped order"));
+    }
+    if (state.getCheckedOut()) {
+      return Optional.of(effects().error("Cannot delete checked out order"));
+    }
     return Optional.empty();
   }
 
@@ -135,27 +193,39 @@ public class ShoppingCart extends AbstractShoppingCart {
   }
 
   private Effect<Empty> handle(CartState state, CartApi.ChangeLineItem command) {
-    return effects().error("The command handler for `ChangeItem` is not implemented, yet");
+    return effects()
+        .updateState(updateState(state, command))
+        .thenReply(Empty.getDefaultInstance());
   }
 
   private Effect<Empty> handle(CartState state, CartApi.RemoveLineItem command) {
-    return effects().error("The command handler for `RemoveItem` is not implemented, yet");
+    return effects()
+        .updateState(updateState(state, command))
+        .thenReply(Empty.getDefaultInstance());
   }
 
   private Effect<Empty> handle(CartState state, CartApi.CheckoutShoppingCart command) {
-    return effects().error("The command handler for `CheckoutCart` is not implemented, yet");
+    return effects()
+        .updateState(updateState(state, command))
+        .thenReply(Empty.getDefaultInstance());
   }
 
   private Effect<Empty> handle(CartState state, CartApi.ShippedShoppingCart command) {
-    return effects().error("The command handler for `ShippedCart` is not implemented, yet");
+    return effects()
+        .updateState(updateState(state, command))
+        .thenReply(Empty.getDefaultInstance());
   }
 
   private Effect<Empty> handle(CartState state, CartApi.DeliveredShoppingCart command) {
-    return effects().error("The command handler for `DeliveredCart` is not implemented, yet");
+    return effects()
+        .updateState(updateState(state, command))
+        .thenReply(Empty.getDefaultInstance());
   }
 
   private Effect<Empty> handle(CartState state, CartApi.DeleteShoppingCart command) {
-    return effects().error("The command handler for `DeleteCart` is not implemented, yet");
+    return effects()
+        .updateState(updateState(state, command))
+        .thenReply(Empty.getDefaultInstance());
   }
 
   private Effect<CartApi.ShoppingCart> handle(CartState state, CartApi.GetShoppingCart command) {
@@ -176,7 +246,69 @@ public class ShoppingCart extends AbstractShoppingCart {
         .build();
   }
 
-  private io.shopping.cart.CartApi.ShoppingCart toApi(CartState state) {
+  private CartState updateState(CartState state, CartApi.ChangeLineItem command) {
+    var lineItems = CartItems
+        .fromLineItems(state.getLineItemsList())
+        .update(command)
+        .toLineItems();
+    return state
+        .toBuilder()
+        .clearLineItems()
+        .addAllLineItems(lineItems)
+        .build();
+  }
+
+  private CartState updateState(CartState state, CartApi.RemoveLineItem command) {
+    var lineItems = CartItems
+        .fromLineItems(state.getLineItemsList())
+        .update(command)
+        .toLineItems();
+    return state
+        .toBuilder()
+        .clearLineItems()
+        .addAllLineItems(lineItems)
+        .build();
+  }
+
+  private CartState updateState(CartState state, CartApi.CheckoutShoppingCart command) {
+    return state
+        .toBuilder()
+        .setCheckedOut(true)
+        .setCheckedOutUtc(timestampNow())
+        .build();
+  }
+
+  private CartState updateState(CartState state, CartApi.ShippedShoppingCart command) {
+    return state
+        .toBuilder()
+        .setShippedUtc(timestampNow())
+        .build();
+  }
+
+  private CartState updateState(CartState state, CartApi.DeliveredShoppingCart command) {
+    return state
+        .toBuilder()
+        .setDeliveredUtc(timestampNow())
+        .build();
+  }
+
+  private CartState updateState(CartState state, CartApi.DeleteShoppingCart command) {
+    return state
+        .toBuilder()
+        .setDeleted(true)
+        .build();
+  }
+
+  private Timestamp timestampNow() {
+    var now = Instant.now();
+    return Timestamp
+        .newBuilder()
+        .setSeconds(now.getEpochSecond())
+        .setNanos(now.getNano())
+        .build();
+  }
+
+  private CartApi.ShoppingCart toApi(CartState state) {
     return CartApi.ShoppingCart
         .newBuilder()
         .setCartId(state.getCartId())
@@ -212,7 +344,7 @@ public class ShoppingCart extends AbstractShoppingCart {
   static class CartItems {
     Map<String, CartEntity.LineItem> items = new LinkedHashMap<String, CartEntity.LineItem>();
 
-    CartItems(List<io.shopping.cart.entity.CartEntity.LineItem> lineItems) {
+    CartItems(List<CartEntity.LineItem> lineItems) {
       lineItems.forEach(lineItem -> items.put(lineItem.getProductId(), lineItem));
     }
 
