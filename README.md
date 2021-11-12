@@ -1,5 +1,26 @@
 # shopping-cart-kvaas-java
 
+This is an example implementation of an Akka Serverless
+[Value Entity](https://developer.lightbend.com/docs/akka-serverless/java/value-entity.html) - Key-Value-as-a-Service written in Java.
+
+You can `git checkout` different phases of the development process. Use `git --no-pager log --oneline` to view the available tags.
+
+~~~bash
+git --no-pager log --oneline
+3a95177 (HEAD -> master, tag: step-7, origin/master) implement all business logic
+65eebcc (tag: step-6) implement addLineItem and getShoppingCart
+95428fb (tag: step-5) add vscode rest client for testing service API
+b811833 (tag: step-4) stub business logic methods
+af00b6f (tag: step-3) add shopping cart proto files
+30d4841 (tag: step-2) mvn compile using default proto files
+ad767a0 (tag: step-1) create initial project using mvn archetype
+~~~
+
+To checkout the project at a specific tag:
+
+~~~bash
+git checkout step-4
+~~~
 
 ## Designing
 
