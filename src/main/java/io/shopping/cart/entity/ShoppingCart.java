@@ -15,7 +15,6 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
 
 import io.shopping.cart.CartApi;
-import io.shopping.cart.entity.CartEntity.CartState;
 
 // This class was initially generated based on the .proto definition by Akka Serverless tooling.
 //
@@ -33,7 +32,7 @@ public class ShoppingCart extends AbstractShoppingCart {
 
   @Override
   public CartEntity.CartState emptyState() {
-    return CartState.getDefaultInstance();
+    return CartEntity.CartState.getDefaultInstance();
   }
 
   @Override
@@ -76,11 +75,11 @@ public class ShoppingCart extends AbstractShoppingCart {
     return reject(state, command).orElse(handle(state, command));
   }
 
-  private Optional<Effect<Empty>> reject(CartState state, CartApi.AddLineItem command) {
-    if (state.getCheckedOut()) {
+  private Optional<Effect<Empty>> reject(CartEntity.CartState state, CartApi.AddLineItem command) {
+    if (state.getCheckedOutUtc().getSeconds() > 0) {
       return Optional.of(effects().error("Shopping cart is already checked out"));
     }
-    if (state.getDeleted()) {
+    if (state.getDeletedUtc().getSeconds() > 0) {
       return Optional.of(effects().error("Shopping cart is deleted"));
     }
     if (command.getCustomerId().isEmpty()) {
@@ -98,14 +97,14 @@ public class ShoppingCart extends AbstractShoppingCart {
     return Optional.empty();
   }
 
-  private Optional<Effect<Empty>> reject(CartState state, CartApi.ChangeLineItem command) {
+  private Optional<Effect<Empty>> reject(CartEntity.CartState state, CartApi.ChangeLineItem command) {
     if (state.getCartId().isEmpty()) {
       return Optional.of(effects().error("Shopping cart is empty"));
     }
-    if (state.getCheckedOut()) {
+    if (state.getCheckedOutUtc().getSeconds() > 0) {
       return Optional.of(effects().error("Shopping cart is already checked out"));
     }
-    if (state.getDeleted()) {
+    if (state.getDeletedUtc().getSeconds() > 0) {
       return Optional.of(effects().error("Shopping cart is deleted"));
     }
     if (command.getProductId().isEmpty()) {
@@ -117,14 +116,14 @@ public class ShoppingCart extends AbstractShoppingCart {
     return Optional.empty();
   }
 
-  private Optional<Effect<Empty>> reject(CartState state, CartApi.RemoveLineItem command) {
+  private Optional<Effect<Empty>> reject(CartEntity.CartState state, CartApi.RemoveLineItem command) {
     if (state.getCartId().isEmpty()) {
       return Optional.of(effects().error("Shopping cart is empty"));
     }
-    if (state.getCheckedOut()) {
+    if (state.getCheckedOutUtc().getSeconds() > 0) {
       return Optional.of(effects().error("Shopping cart is already checked out"));
     }
-    if (state.getDeleted()) {
+    if (state.getDeletedUtc().getSeconds() > 0) {
       return Optional.of(effects().error("Shopping cart is deleted"));
     }
     if (command.getProductId().isEmpty()) {
@@ -133,18 +132,18 @@ public class ShoppingCart extends AbstractShoppingCart {
     return Optional.empty();
   }
 
-  private Optional<Effect<Empty>> reject(CartState state, CartApi.CheckoutShoppingCart command) {
+  private Optional<Effect<Empty>> reject(CartEntity.CartState state, CartApi.CheckoutShoppingCart command) {
     if (state.getCartId().isEmpty()) {
       return Optional.of(effects().error("Shopping cart is empty"));
     }
-    if (state.getDeleted()) {
+    if (state.getDeletedUtc().getSeconds() > 0) {
       return Optional.of(effects().error("Shopping cart is deleted"));
     }
     return Optional.empty();
   }
 
-  private Optional<Effect<Empty>> reject(CartState state, CartApi.ShippedShoppingCart command) {
-    if (state.getDeleted()) {
+  private Optional<Effect<Empty>> reject(CartEntity.CartState state, CartApi.ShippedShoppingCart command) {
+    if (state.getDeletedUtc().getSeconds() > 0) {
       return Optional.of(effects().error("Shopping cart is deleted"));
     }
     if (state.getCheckedOutUtc().getSeconds() == 0) {
@@ -153,8 +152,8 @@ public class ShoppingCart extends AbstractShoppingCart {
     return Optional.empty();
   }
 
-  private Optional<Effect<Empty>> reject(CartState state, CartApi.DeliveredShoppingCart command) {
-    if (state.getDeleted()) {
+  private Optional<Effect<Empty>> reject(CartEntity.CartState state, CartApi.DeliveredShoppingCart command) {
+    if (state.getDeletedUtc().getSeconds() > 0) {
       return Optional.of(effects().error("Shopping cart is deleted"));
     }
     if (state.getCheckedOutUtc().getSeconds() == 0) {
@@ -166,73 +165,73 @@ public class ShoppingCart extends AbstractShoppingCart {
     return Optional.empty();
   }
 
-  private Optional<Effect<Empty>> reject(CartState state, CartApi.DeleteShoppingCart command) {
+  private Optional<Effect<Empty>> reject(CartEntity.CartState state, CartApi.DeleteShoppingCart command) {
     if (state.getDeliveredUtc().getSeconds() != 0) {
       return Optional.of(effects().error("Cannot delete delivered order"));
     }
     if (state.getShippedUtc().getSeconds() != 0) {
       return Optional.of(effects().error("Cannot delete shipped order"));
     }
-    if (state.getCheckedOut()) {
+    if (state.getCheckedOutUtc().getSeconds() > 0) {
       return Optional.of(effects().error("Cannot delete checked out order"));
     }
     return Optional.empty();
   }
 
-  private Optional<Effect<CartApi.ShoppingCart>> reject(CartState state, CartApi.GetShoppingCart command) {
+  private Optional<Effect<CartApi.ShoppingCart>> reject(CartEntity.CartState state, CartApi.GetShoppingCart command) {
     if (state.getCartId().isEmpty()) {
       return Optional.of(effects().error("Shopping cart is empty"));
     }
     return Optional.empty();
   }
 
-  private Effect<Empty> handle(CartState state, CartApi.AddLineItem command) {
+  private Effect<Empty> handle(CartEntity.CartState state, CartApi.AddLineItem command) {
     return effects()
         .updateState(updateState(state, command))
         .thenReply(Empty.getDefaultInstance());
   }
 
-  private Effect<Empty> handle(CartState state, CartApi.ChangeLineItem command) {
+  private Effect<Empty> handle(CartEntity.CartState state, CartApi.ChangeLineItem command) {
     return effects()
         .updateState(updateState(state, command))
         .thenReply(Empty.getDefaultInstance());
   }
 
-  private Effect<Empty> handle(CartState state, CartApi.RemoveLineItem command) {
+  private Effect<Empty> handle(CartEntity.CartState state, CartApi.RemoveLineItem command) {
     return effects()
         .updateState(updateState(state, command))
         .thenReply(Empty.getDefaultInstance());
   }
 
-  private Effect<Empty> handle(CartState state, CartApi.CheckoutShoppingCart command) {
+  private Effect<Empty> handle(CartEntity.CartState state, CartApi.CheckoutShoppingCart command) {
     return effects()
         .updateState(updateState(state, command))
         .thenReply(Empty.getDefaultInstance());
   }
 
-  private Effect<Empty> handle(CartState state, CartApi.ShippedShoppingCart command) {
+  private Effect<Empty> handle(CartEntity.CartState state, CartApi.ShippedShoppingCart command) {
     return effects()
         .updateState(updateState(state, command))
         .thenReply(Empty.getDefaultInstance());
   }
 
-  private Effect<Empty> handle(CartState state, CartApi.DeliveredShoppingCart command) {
+  private Effect<Empty> handle(CartEntity.CartState state, CartApi.DeliveredShoppingCart command) {
     return effects()
         .updateState(updateState(state, command))
         .thenReply(Empty.getDefaultInstance());
   }
 
-  private Effect<Empty> handle(CartState state, CartApi.DeleteShoppingCart command) {
+  private Effect<Empty> handle(CartEntity.CartState state, CartApi.DeleteShoppingCart command) {
     return effects()
         .updateState(updateState(state, command))
         .thenReply(Empty.getDefaultInstance());
   }
 
-  private Effect<CartApi.ShoppingCart> handle(CartState state, CartApi.GetShoppingCart command) {
+  private Effect<CartApi.ShoppingCart> handle(CartEntity.CartState state, CartApi.GetShoppingCart command) {
     return effects().reply(toApi(state));
   }
 
-  private CartState updateState(CartState state, CartApi.AddLineItem command) {
+  private static CartEntity.CartState updateState(CartEntity.CartState state, CartApi.AddLineItem command) {
     var lineItems = CartItems
         .fromLineItems(state.getLineItemsList())
         .update(command)
@@ -246,7 +245,7 @@ public class ShoppingCart extends AbstractShoppingCart {
         .build();
   }
 
-  private CartState updateState(CartState state, CartApi.ChangeLineItem command) {
+  private static CartEntity.CartState updateState(CartEntity.CartState state, CartApi.ChangeLineItem command) {
     var lineItems = CartItems
         .fromLineItems(state.getLineItemsList())
         .update(command)
@@ -258,7 +257,7 @@ public class ShoppingCart extends AbstractShoppingCart {
         .build();
   }
 
-  private CartState updateState(CartState state, CartApi.RemoveLineItem command) {
+  private static CartEntity.CartState updateState(CartEntity.CartState state, CartApi.RemoveLineItem command) {
     var lineItems = CartItems
         .fromLineItems(state.getLineItemsList())
         .update(command)
@@ -270,36 +269,35 @@ public class ShoppingCart extends AbstractShoppingCart {
         .build();
   }
 
-  private CartState updateState(CartState state, CartApi.CheckoutShoppingCart command) {
+  private static CartEntity.CartState updateState(CartEntity.CartState state, CartApi.CheckoutShoppingCart command) {
     return state
         .toBuilder()
-        .setCheckedOut(true)
         .setCheckedOutUtc(timestampNow())
         .build();
   }
 
-  private CartState updateState(CartState state, CartApi.ShippedShoppingCart command) {
+  private static CartEntity.CartState updateState(CartEntity.CartState state, CartApi.ShippedShoppingCart command) {
     return state
         .toBuilder()
         .setShippedUtc(timestampNow())
         .build();
   }
 
-  private CartState updateState(CartState state, CartApi.DeliveredShoppingCart command) {
+  private static CartEntity.CartState updateState(CartEntity.CartState state, CartApi.DeliveredShoppingCart command) {
     return state
         .toBuilder()
         .setDeliveredUtc(timestampNow())
         .build();
   }
 
-  private CartState updateState(CartState state, CartApi.DeleteShoppingCart command) {
+  private static CartEntity.CartState updateState(CartEntity.CartState state, CartApi.DeleteShoppingCart command) {
     return state
         .toBuilder()
-        .setDeleted(true)
+        .setDeletedUtc(timestampNow())
         .build();
   }
 
-  private Timestamp timestampNow() {
+  private static Timestamp timestampNow() {
     var now = Instant.now();
     return Timestamp
         .newBuilder()
@@ -308,21 +306,20 @@ public class ShoppingCart extends AbstractShoppingCart {
         .build();
   }
 
-  private CartApi.ShoppingCart toApi(CartState state) {
+  private static CartApi.ShoppingCart toApi(CartEntity.CartState state) {
     return CartApi.ShoppingCart
         .newBuilder()
         .setCartId(state.getCartId())
         .setCustomerId(state.getCustomerId())
-        .setCheckedOut(state.getCheckedOut())
         .setCheckedOutUtc(toUtc(state.getCheckedOutUtc()))
         .setShippedUtc(toUtc(state.getShippedUtc()))
         .setDeliveredUtc(toUtc(state.getDeliveredUtc()))
-        .setDeleted(state.getDeleted())
+        .setDeletedUtc(toUtc(state.getDeletedUtc()))
         .addAllLineItems(toApi(state.getLineItemsList()))
         .build();
   }
 
-  private List<CartApi.LineItem> toApi(List<CartEntity.LineItem> lineItems) {
+  private static List<CartApi.LineItem> toApi(List<CartEntity.LineItem> lineItems) {
     return lineItems.stream().map(
         lineItem -> CartApi.LineItem
             .newBuilder()
@@ -333,12 +330,12 @@ public class ShoppingCart extends AbstractShoppingCart {
         .collect(Collectors.toList());
   }
 
-  private String toUtc(Timestamp timestamp) {
+  private static String toUtc(Timestamp timestamp) {
     if (timestamp.getSeconds() == 0) {
       return "";
     }
-    var daeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-    return daeFormat.format(new Date(timestamp.getSeconds() * 1000 + timestamp.getNanos() / 1000000));
+    var dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    return dateFormat.format(new Date(timestamp.getSeconds() * 1000 + timestamp.getNanos() / 1000000));
   }
 
   static class CartItems {

@@ -107,12 +107,11 @@ message GetShoppingCart {
 message ShoppingCart {
   string cart_id = 1;
   string customer_id = 2;
-  bool checked_out = 3;
-  bool deleted = 4;
-  string checked_out_utc = 5;
-  string shipped_utc = 6;
-  string delivered_utc = 7;
-  repeated LineItem line_items = 8;
+  string checked_out_utc = 3;
+  string shipped_utc = 4;
+  string delivered_utc = 5;
+  string deleted_utc = 6;
+  repeated LineItem line_items = 7;
 }
 
 message LineItem {
