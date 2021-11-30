@@ -37,42 +37,42 @@ public class ShoppingCart extends AbstractShoppingCart {
 
   @Override
   public Effect<Empty> addItem(CartEntity.CartState state, CartApi.AddLineItem command) {
-    return reject(state, command).orElse(handle(state, command));
+    return reject(state, command).orElseGet(() -> handle(state, command));
   }
 
   @Override
   public Effect<Empty> changeItem(CartEntity.CartState state, CartApi.ChangeLineItem command) {
-    return reject(state, command).orElse(handle(state, command));
+    return reject(state, command).orElseGet(() -> handle(state, command));
   }
 
   @Override
   public Effect<Empty> removeItem(CartEntity.CartState state, CartApi.RemoveLineItem command) {
-    return reject(state, command).orElse(handle(state, command));
+    return reject(state, command).orElseGet(() -> handle(state, command));
   }
 
   @Override
   public Effect<Empty> checkoutCart(CartEntity.CartState state, CartApi.CheckoutShoppingCart command) {
-    return reject(state, command).orElse(handle(state, command));
+    return reject(state, command).orElseGet(() -> handle(state, command));
   }
 
   @Override
   public Effect<Empty> shippedCart(CartEntity.CartState state, CartApi.ShippedShoppingCart command) {
-    return reject(state, command).orElse(handle(state, command));
+    return reject(state, command).orElseGet(() -> handle(state, command));
   }
 
   @Override
   public Effect<Empty> deliveredCart(CartEntity.CartState state, CartApi.DeliveredShoppingCart command) {
-    return reject(state, command).orElse(handle(state, command));
+    return reject(state, command).orElseGet(() -> handle(state, command));
   }
 
   @Override
   public Effect<Empty> deleteCart(CartEntity.CartState state, CartApi.DeleteShoppingCart command) {
-    return reject(state, command).orElse(handle(state, command));
+    return reject(state, command).orElseGet(() -> handle(state, command));
   }
 
   @Override
   public Effect<CartApi.ShoppingCart> getCart(CartEntity.CartState state, CartApi.GetShoppingCart command) {
-    return reject(state, command).orElse(handle(state, command));
+    return reject(state, command).orElseGet(() -> handle(state, command));
   }
 
   private Optional<Effect<Empty>> reject(CartEntity.CartState state, CartApi.AddLineItem command) {
